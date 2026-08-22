@@ -28,3 +28,4 @@ Tokens are stored in `localStorage` and sent as `Authorization: Bearer <token>`.
 - `npm run preview` — preview production build
 
 Production builds call `VITE_API_BASE_URL` from `.env.production` (`https://budget.hawleywebdesign.com`).
+# MyBudget
