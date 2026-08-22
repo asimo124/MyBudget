@@ -1,0 +1,87 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import './sidebar-demo';
+:root {
+  --primary-600: #487fff;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  font-family: Inter, system-ui, sans-serif;
+  background-image: url('/images/body-bg.png');
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-attachment: fixed;
+}
+
+.dark body,
+html.dark body {
+  background-image: none;
+  background-color: #1b2431;
+}
+
+.dashboard-main {
+  display: flex;
+  flex-direction: column;
+  flex-wrap: nowrap;
+  min-height: 100vh;
+  min-width: 0;
+  max-width: 100%;
+  overflow-x: hidden;
+  transition: margin-left 0.25s ease;
+}
+
+.dashboard-main-body {
+  padding: 0.75rem;
+  min-width: 0;
+  max-width: 100%;
+}
+
+@media (min-width: 768px) {
+  .dashboard-main-body {
+    padding: 0.9375rem;
+  }
+}
+
+@media (min-width: 1400px) {
+  .dashboard-main-body {
+    padding: 1.5rem;
+  }
+}
+
+.navbar-header {
+  height: auto;
+  min-height: 4.5rem;
+  position: sticky;
+  top: 0;
+  padding: 0.75rem 1rem 0.75rem 3.75rem;
+  z-index: 20;
+  background: linear-gradient(163deg, rgb(245, 243, 230) 5%, rgb(242, 245, 250) 100%);
+  border-bottom: 1px solid #ebecef;
+}
+
+@media (min-width: 1200px) {
+  .navbar-header {
+    padding: 1rem 1.5rem;
+  }
+}
+
+.dark .navbar-header {
+  background: #273142;
+  border-bottom-color: #323d4e;
+}
+
+.btn {
+  @apply inline-flex items-center justify-center font-medium transition-colors;
+}
+
+.btn-primary {
+  @apply bg-primary-600 text-white hover:bg-primary-700;
+}
+
+.form-control {
+  @apply w-full border border-neutral-300 bg-neutral-50 text-neutral-900 outline-none focus:border-primary-600 dark:border-neutral-600 dark:bg-dark-2 dark:text-white;
+}
