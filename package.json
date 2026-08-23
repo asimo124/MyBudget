@@ -9,6 +9,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "apexcharts": "^6.10.0",
     "axios": "^1.19.0",
     "flowbite": "^2.5.2",
     "pinia": "^4.0.3",

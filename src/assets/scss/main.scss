@@ -75,13 +75,26 @@ html.dark body {
 }
 
 .btn {
-  @apply inline-flex items-center justify-center font-medium transition-colors;
+  @apply inline-flex items-center justify-center rounded-lg px-6 py-3 text-sm font-medium transition-colors;
 }
 
 .btn-primary {
   @apply bg-primary-600 text-white hover:bg-primary-700;
 }
 
+.btn-sm {
+  @apply px-3 py-1.5 text-xs;
+}
+
+.form-input,
 .form-control {
-  @apply w-full border border-neutral-300 bg-neutral-50 text-neutral-900 outline-none focus:border-primary-600 dark:border-neutral-600 dark:bg-dark-2 dark:text-white;
+  @apply w-full rounded-lg border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900 outline-none focus:border-primary-600 dark:border-neutral-600 dark:bg-dark-2 dark:text-white;
+}
+
+.card {
+  @apply rounded-lg border border-neutral-200 bg-white dark:border-neutral-600 dark:bg-dark-2;
+}
+
+.card-body {
+  @apply px-6 py-5;
 }

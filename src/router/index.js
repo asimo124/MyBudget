@@ -8,6 +8,20 @@ import BillsAdminView from '@/views/BillsAdminView.vue'
 import BillFormView from '@/views/BillFormView.vue'
 import ExpensesView from '@/views/ExpensesView.vue'
 import BudgetProgressView from '@/views/BudgetProgressView.vue'
+import DisposableIncomeTrackerView from '@/views/DisposableIncomeTrackerView.vue'
+import CreditUtilizationView from '@/views/CreditUtilizationView.vue'
+import CreditLoanFormView from '@/views/CreditLoanFormView.vue'
+import LoanCountdownView from '@/views/LoanCountdownView.vue'
+import AuditExpensesView from '@/views/AuditExpensesView.vue'
+import GoogleMapsView from '@/views/GoogleMapsView.vue'
+import DietaryLogView from '@/views/DietaryLogView.vue'
+import PushNotificationsView from '@/views/PushNotificationsView.vue'
+import PushNotificationFormView from '@/views/PushNotificationFormView.vue'
+import PushScheduleFormView from '@/views/PushScheduleFormView.vue'
+import AppleNotesView from '@/views/AppleNotesView.vue'
+import DisposableBalancerView from '@/views/DisposableBalancerView.vue'
+import FoodSensitivitiesView from '@/views/FoodSensitivitiesView.vue'
+import SettingsView from '@/views/SettingsView.vue'
 
 function slugToName(path) {
   return path.replace(/^\//, '').replace(/\//g, '-')
@@ -17,6 +31,17 @@ const REAL_VIEWS = {
   'bills-admin': BillsAdminView,
   expenses: ExpensesView,
   'budget-progress': BudgetProgressView,
+  'disposable-tracker': DisposableIncomeTrackerView,
+  'disposable-balancer': DisposableBalancerView,
+  'credit-utilization': CreditUtilizationView,
+  'loan-countdown': LoanCountdownView,
+  'audit-expenses': AuditExpensesView,
+  'google-maps': GoogleMapsView,
+  'dietary-log': DietaryLogView,
+  'push-notifications': PushNotificationsView,
+  'apple-notes': AppleNotesView,
+  'food-sensitivities': FoodSensitivitiesView,
+  settings: SettingsView,
 }
 
 const placeholderChildren = []
@@ -72,6 +97,48 @@ const router = createRouter({
           component: BillFormView,
           props: { mode: 'edit' },
           meta: { requiresAuth: true, title: 'Edit Bill' },
+        },
+        {
+          path: 'credit-utilization/create',
+          name: 'credit-utilization-create',
+          component: CreditLoanFormView,
+          props: { mode: 'create' },
+          meta: { requiresAuth: true, title: 'Create Loan/Card' },
+        },
+        {
+          path: 'credit-utilization/edit/:id',
+          name: 'credit-utilization-edit',
+          component: CreditLoanFormView,
+          props: { mode: 'edit' },
+          meta: { requiresAuth: true, title: 'Edit Loan/Card' },
+        },
+        {
+          path: 'push-notifications/create',
+          name: 'push-notifications-create',
+          component: PushNotificationFormView,
+          props: { mode: 'create' },
+          meta: { requiresAuth: true, title: 'Create Reminder' },
+        },
+        {
+          path: 'push-notifications/edit/:id',
+          name: 'push-notifications-edit',
+          component: PushNotificationFormView,
+          props: { mode: 'edit' },
+          meta: { requiresAuth: true, title: 'Edit Reminder' },
+        },
+        {
+          path: 'push-notifications/schedules/create',
+          name: 'push-schedules-create',
+          component: PushScheduleFormView,
+          props: { mode: 'create' },
+          meta: { requiresAuth: true, title: 'Create Schedule' },
+        },
+        {
+          path: 'push-notifications/schedules/edit/:id',
+          name: 'push-schedules-edit',
+          component: PushScheduleFormView,
+          props: { mode: 'edit' },
+          meta: { requiresAuth: true, title: 'Edit Schedule' },
         },
         ...placeholderChildren,
       ],
