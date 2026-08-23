@@ -1,19 +1,31 @@
 <script setup>
 import { ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
+import { safeRedirectPath } from '@/utils/safeRedirect'
 
 const auth = useAuthStore()
+const route = useRoute()
 const router = useRouter()
 
 const username = ref('')
 const password = ref('')
 const showPassword = ref(false)
 
+function redirectAfterLogin() {
+  const redirect = safeRedirectPath(route.query.redirect)
+  if (redirect) {
+    // Full navigation is more reliable on iOS Safari than client-side push after login
+    window.location.assign(redirect)
+    return
+  }
+  router.replace({ name: 'bills-admin' })
+}
+
 async function onSubmit() {
   const ok = await auth.login(username.value.trim(), password.value)
   if (ok) {
-    router.push({ name: 'bills-admin' })
+    redirectAfterLogin()
   }
 }
 </script>

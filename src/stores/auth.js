@@ -5,9 +5,34 @@ import api from '@/api/client'
 const TOKEN_KEY = 'mybudget_token'
 const USER_KEY = 'mybudget_user'
 
+function readStorage(key) {
+  try {
+    return localStorage.getItem(key)
+  } catch {
+    return null
+  }
+}
+
+function writeStorage(key, value) {
+  try {
+    localStorage.setItem(key, value)
+    return true
+  } catch {
+    return false
+  }
+}
+
+function removeStorage(key) {
+  try {
+    localStorage.removeItem(key)
+  } catch {
+    // iOS private browsing can throw
+  }
+}
+
 export const useAuthStore = defineStore('auth', () => {
-  const token = ref(localStorage.getItem(TOKEN_KEY) || '')
-  const user = ref(JSON.parse(localStorage.getItem(USER_KEY) || 'null'))
+  const token = ref(readStorage(TOKEN_KEY) || '')
+  const user = ref(JSON.parse(readStorage(USER_KEY) || 'null'))
   const loading = ref(false)
   const error = ref('')
 
@@ -16,15 +41,15 @@ export const useAuthStore = defineStore('auth', () => {
   function persist(sessionToken, sessionUser) {
     token.value = sessionToken
     user.value = sessionUser
-    localStorage.setItem(TOKEN_KEY, sessionToken)
-    localStorage.setItem(USER_KEY, JSON.stringify(sessionUser))
+    writeStorage(TOKEN_KEY, sessionToken)
+    writeStorage(USER_KEY, JSON.stringify(sessionUser))
   }
 
   function clear() {
     token.value = ''
     user.value = null
-    localStorage.removeItem(TOKEN_KEY)
-    localStorage.removeItem(USER_KEY)
+    removeStorage(TOKEN_KEY)
+    removeStorage(USER_KEY)
   }
 
   async function login(username, password) {
@@ -53,13 +78,15 @@ export const useAuthStore = defineStore('auth', () => {
       const { data } = await api.get('/api/auth/me.php')
       if (data?.user) {
         user.value = data.user
-        localStorage.setItem(USER_KEY, JSON.stringify(data.user))
+        writeStorage(USER_KEY, JSON.stringify(data.user))
         return true
       }
       clear()
       return false
-    } catch {
-      clear()
+    } catch (err) {
+      if (err.response?.status === 401) {
+        clear()
+      }
       return false
     }
   }

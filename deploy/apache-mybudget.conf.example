@@ -1,0 +1,22 @@
+# Apache vhost snippet for MyBudget (Vue Router history mode)
+# Copy/adapt into: /etc/apache2/sites-available/mybudget.conf
+# Then: sudo a2enmod rewrite && sudo a2ensite mybudget && sudo systemctl reload apache2
+#
+# Replace DocumentRoot with your actual web root path.
+
+<VirtualHost *:443>
+    ServerName mybudget.hawleywebdesign.com
+
+    DocumentRoot /var/www/mybudget
+
+    <Directory /var/www/mybudget>
+        Options -Indexes +FollowSymLinks
+        AllowOverride All
+        Require all granted
+
+        # Apache 2.4+ — serve index.html for any URL that is not a real file
+        FallbackResource /index.html
+    </Directory>
+
+    # SSL directives (certbot / your existing cert paths) go here
+</VirtualHost>

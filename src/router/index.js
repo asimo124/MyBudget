@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { navGroups } from '@/config/nav'
+import { safeRedirectPath } from '@/utils/safeRedirect'
 import AppLayout from '@/components/layout/AppLayout.vue'
 import LoginView from '@/views/LoginView.vue'
 import PlaceholderView from '@/views/PlaceholderView.vue'
@@ -44,12 +45,23 @@ const REAL_VIEWS = {
   settings: SettingsView,
 }
 
+const REAL_VIEW_TITLES = Object.fromEntries(
+  navGroups.flatMap((group) =>
+    group.items
+      .filter((item) => item.path)
+      .map((item) => [slugToName(item.path), item.name])
+  )
+)
+
 const placeholderChildren = []
+const registeredNames = new Set()
+
 for (const group of navGroups) {
   for (const item of group.items) {
     if (!item.path) continue
     const name = slugToName(item.path)
     const path = item.path.replace(/^\//, '')
+    registeredNames.add(name)
     if (REAL_VIEWS[name]) {
       placeholderChildren.push({
         path,
@@ -67,6 +79,17 @@ for (const group of navGroups) {
       })
     }
   }
+}
+
+// Ensure deep links work even if a route is removed from nav.js
+for (const [name, component] of Object.entries(REAL_VIEWS)) {
+  if (registeredNames.has(name)) continue
+  placeholderChildren.push({
+    path: name,
+    name,
+    component,
+    meta: { requiresAuth: true, title: REAL_VIEW_TITLES[name] || name },
+  })
 }
 
 const router = createRouter({
@@ -158,6 +181,10 @@ router.beforeEach(async (to) => {
   }
 
   if (to.meta.guest && auth.isAuthenticated) {
+    const redirect = safeRedirectPath(to.query.redirect)
+    if (redirect) {
+      return redirect
+    }
     return { name: 'bills-admin' }
   }
 

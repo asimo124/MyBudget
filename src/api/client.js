@@ -1,4 +1,5 @@
 import axios from 'axios'
+import { safeRedirectPath } from '@/utils/safeRedirect'
 
 const baseURL = import.meta.env.VITE_API_BASE_URL || ''
 
@@ -10,8 +11,25 @@ const api = axios.create({
   },
 })
 
+function readToken() {
+  try {
+    return localStorage.getItem('mybudget_token')
+  } catch {
+    return null
+  }
+}
+
+function clearStoredSession() {
+  try {
+    localStorage.removeItem('mybudget_token')
+    localStorage.removeItem('mybudget_user')
+  } catch {
+    // iOS private browsing can throw
+  }
+}
+
 api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('mybudget_token')
+  const token = readToken()
   if (token) {
     config.headers.Authorization = `Bearer ${token}`
   }
@@ -22,10 +40,16 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      localStorage.removeItem('mybudget_token')
-      localStorage.removeItem('mybudget_user')
+      clearStoredSession()
       if (window.location.pathname !== '/login') {
-        window.location.href = '/login'
+        const redirect = safeRedirectPath(
+          `${window.location.pathname}${window.location.search}${window.location.hash}`
+        )
+        const params = new URLSearchParams()
+        if (redirect) {
+          params.set('redirect', redirect)
+        }
+        window.location.assign(`/login?${params.toString()}`)
       }
     }
     return Promise.reject(error)
