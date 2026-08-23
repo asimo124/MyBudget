@@ -20,6 +20,21 @@ const newExpense = reactive({
   amount: '',
 })
 
+/** Native <input type="date"> only accepts YYYY-MM-DD. */
+function toDateInputValue(value) {
+  if (value == null || value === '') return ''
+  const raw = String(value).trim()
+  if (/^\d{4}-\d{2}-\d{2}$/.test(raw)) return raw
+  const datePart = raw.split(/[\sT]/)[0]
+  if (/^\d{4}-\d{2}-\d{2}$/.test(datePart)) return datePart
+  const parsed = new Date(raw)
+  if (Number.isNaN(parsed.getTime())) return ''
+  const y = parsed.getFullYear()
+  const m = String(parsed.getMonth() + 1).padStart(2, '0')
+  const d = String(parsed.getDate()).padStart(2, '0')
+  return `${y}-${m}-${d}`
+}
+
 async function loadExpenses() {
   loading.value = true
   mainError.value = ''
@@ -27,6 +42,7 @@ async function loadExpenses() {
     const { data } = await api.get('/api/expenses/list.php')
     expenses.value = (data.expenses || []).map((item) => ({
       ...item,
+      vnd_frequency_value: toDateInputValue(item.vnd_frequency_value),
       watch_flag: Boolean(item.watch_flag),
     }))
   } catch (err) {
@@ -229,8 +245,7 @@ onMounted(loadExpenses)
               <label class="mb-1 block text-xs text-neutral-500">Date</label>
               <input
                 v-model="item.vnd_frequency_value"
-                type="text"
-                placeholder="YYYY-MM-DD"
+                type="date"
                 class="form-control h-10 rounded-lg px-3 text-sm"
               />
             </div>
@@ -282,8 +297,7 @@ onMounted(loadExpenses)
               <td class="px-4 py-3 align-middle">
                 <input
                   v-model="item.vnd_frequency_value"
-                  type="text"
-                  placeholder="YYYY-MM-DD"
+                  type="date"
                   class="form-control h-10 max-w-[11rem] rounded-lg px-3"
                 />
               </td>
