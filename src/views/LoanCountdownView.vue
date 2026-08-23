@@ -325,7 +325,18 @@ function calculateLoanCountdown() {
     const basePool = isFirst ? base1 : base15
     const adjAdd = getAdjustAdd(activeN, isFirst)
     let pool = roundMoney(basePool + adjAdd)
-    if (pi === 0) {
+
+    // "Already spent" is relative to the next upcoming paychecks before push.
+    // With push on, the first paycheck is skipped, so the 2nd-spent amount
+    // applies to the new first row (former 2nd paycheck).
+    if (form.push_to_next_paycheck) {
+      if (pi === 0) {
+        const alreadySpent2 = Number(form.already_spent_on_second_paycheck)
+        if (Number.isFinite(alreadySpent2) && alreadySpent2 > 0) {
+          pool = roundMoney(Math.max(0, pool - alreadySpent2))
+        }
+      }
+    } else if (pi === 0) {
       const alreadySpent = Number(form.already_spent_on_first_paycheck)
       if (Number.isFinite(alreadySpent) && alreadySpent > 0) {
         pool = roundMoney(Math.max(0, pool - alreadySpent))
@@ -469,7 +480,7 @@ onMounted(() => {
           </div>
           <div>
             <label class="mb-1 block text-sm text-gray-600 dark:text-gray-400">
-              Already spent on first paycheck
+              Already spent on first paycheck (1st / next upcoming)
             </label>
             <input
               v-model.number="form.already_spent_on_first_paycheck"
@@ -482,7 +493,7 @@ onMounted(() => {
           </div>
           <div>
             <label class="mb-1 block text-sm text-gray-600 dark:text-gray-400">
-              Already spent on 2nd paycheck
+              Already spent on 2nd paycheck (15th / after next)
             </label>
             <input
               v-model.number="form.already_spent_on_second_paycheck"
@@ -492,6 +503,9 @@ onMounted(() => {
               class="form-input w-full"
               @blur="persistLoanForm"
             />
+            <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+              With “Push to next paycheck” checked, this amount is deducted from the first paycheck shown.
+            </p>
           </div>
           <div>
             <label class="mb-1 block text-sm text-gray-600 dark:text-gray-400">Starting month</label>
