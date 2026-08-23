@@ -1,5 +1,5 @@
 <script setup>
-import { computed, onMounted, reactive, ref } from 'vue'
+import { computed, nextTick, onMounted, reactive, ref } from 'vue'
 import {
   LOAN_COUNTDOWN_STORAGE_KEY,
   LOAN_SLOT_COUNT,
@@ -440,15 +440,65 @@ onMounted(() => {
   loadSavedFormInto(form)
   calculateLoanCountdown()
 })
+
+const hasResults = computed(
+  () =>
+    Boolean(countdownValidationError.value) ||
+    (loan1_filled.value && loan1Schedule.value.length > 0) ||
+    loan2Schedule.value.length > 0 ||
+    loan3Schedule.value.length > 0 ||
+    loan4Schedule.value.length > 0 ||
+    loan5Schedule.value.length > 0
+)
+
+function scrollToResults() {
+  const el = document.getElementById('loan-countdown-results')
+  if (el) {
+    el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  }
+}
+
+function scrollToTop() {
+  const el = document.getElementById('loan-countdown-top')
+  if (el) {
+    el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  } else {
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+}
+
+async function runCalculateAndScroll() {
+  calculateLoanCountdown()
+  await nextTick()
+  scrollToResults()
+}
 </script>
 
 <template>
-  <div class="space-y-6">
-    <div>
-      <h1 class="text-2xl font-semibold text-gray-900 dark:text-white">Loan Countdown</h1>
-      <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-        Snowball payoff schedule — saved in your browser (localStorage).
-      </p>
+  <div id="loan-countdown-top" class="space-y-6">
+    <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+      <div>
+        <h1 class="text-2xl font-semibold text-gray-900 dark:text-white">Loan Countdown</h1>
+        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+          Snowball payoff schedule — saved in your browser (localStorage).
+        </p>
+      </div>
+      <div class="flex flex-wrap gap-2 sm:justify-end">
+        <button
+          type="button"
+          class="btn bg-gray-200 text-gray-800 hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-200"
+          @click="clearLoanFormData"
+        >
+          Clear Data
+        </button>
+        <button
+          type="button"
+          class="btn bg-primary-500 text-white hover:bg-primary-600"
+          @click="runCalculateAndScroll"
+        >
+          Calculate Loan Countdown
+        </button>
+      </div>
     </div>
 
     <div class="card">
@@ -604,18 +654,32 @@ onMounted(() => {
       <button
         type="button"
         class="btn bg-primary-500 text-white hover:bg-primary-600"
-        @click="calculateLoanCountdown"
+        @click="runCalculateAndScroll"
       >
         Calculate Loan Countdown
       </button>
     </div>
 
     <div
-      v-if="countdownValidationError"
-      class="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800 dark:border-red-800 dark:bg-red-900/20 dark:text-red-300"
+      id="loan-countdown-results"
+      class="scroll-mt-4 space-y-6"
     >
-      {{ countdownValidationError }}
-    </div>
+      <div
+        v-if="countdownValidationError"
+        class="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800 dark:border-red-800 dark:bg-red-900/20 dark:text-red-300"
+      >
+        {{ countdownValidationError }}
+      </div>
+
+      <div v-if="hasResults" class="flex justify-end">
+        <button
+          type="button"
+          class="btn bg-gray-200 text-sm text-gray-800 hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-200"
+          @click="scrollToTop"
+        >
+          Back to Top
+        </button>
+      </div>
 
     <!-- Loan 1 results -->
     <div v-if="loan1_filled && loan1Schedule.length" class="card">
@@ -909,6 +973,17 @@ onMounted(() => {
           Money left over from paying {{ loanDisplayName(5) }}:
           <strong>${{ formatMoney(loan5PayoffLeftover) }}</strong>
         </p>
+      </div>
+    </div>
+
+      <div v-if="hasResults" class="flex justify-end pb-2">
+        <button
+          type="button"
+          class="btn bg-gray-200 text-sm text-gray-800 hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-200"
+          @click="scrollToTop"
+        >
+          Back to Top
+        </button>
       </div>
     </div>
   </div>
