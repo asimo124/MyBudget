@@ -546,8 +546,9 @@ onMounted(() => {
       </div>
 
       <div>
+        <!-- md (768px): covers iPhone landscape (~932px on 15 Pro Max); lg was 1024 and stayed stacked -->
         <div
-          class="mb-3 hidden grid-cols-[minmax(0,1fr)_minmax(0,1fr)] gap-4 lg:grid"
+          class="mb-3 hidden grid-cols-[minmax(0,1fr)_minmax(0,1fr)] gap-4 md:grid"
         >
           <h5 class="text-sm font-semibold uppercase tracking-wide text-neutral-500">
             Totals
@@ -556,7 +557,7 @@ onMounted(() => {
             Avg / Month
           </h5>
         </div>
-        <h5 class="mb-3 text-sm font-semibold uppercase tracking-wide text-neutral-500 lg:hidden">
+        <h5 class="mb-3 text-sm font-semibold uppercase tracking-wide text-neutral-500 md:hidden">
           Totals
         </h5>
 
@@ -564,7 +565,7 @@ onMounted(() => {
           <div
             v-for="(item, index) in sumItems"
             :key="`sum-${index}`"
-            class="grid grid-cols-1 items-center gap-2 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] lg:gap-4"
+            class="grid grid-cols-1 items-center gap-2 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] md:gap-4"
           >
             <div class="flex min-w-0 items-center gap-2">
               <input
@@ -604,7 +605,7 @@ onMounted(() => {
                 title="Average disposable per month"
               />
             </div>
-            <div v-else class="hidden h-10 lg:block" aria-hidden="true"></div>
+            <div v-else class="hidden h-10 md:block" aria-hidden="true"></div>
           </div>
         </div>
       </div>
