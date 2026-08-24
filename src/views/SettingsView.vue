@@ -2,6 +2,7 @@
 import { onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import api from '@/api/client'
+import { fetchTestMode, saveTestMode } from '@/utils/testMode'
 
 const route = useRoute()
 const router = useRouter()
@@ -10,6 +11,7 @@ const testMode = ref(false)
 const mainMsg = ref('')
 const mainError = ref('')
 const resetting = ref(false)
+const savingTestMode = ref(false)
 const showResetConfirm = ref(false)
 
 const legacyBase =
@@ -17,16 +19,22 @@ const legacyBase =
 
 const trackProgress2Url = `${legacyBase}/bills/admin/budget_track2.php?allow_blank_sort_order=1`
 
-function loadTestMode() {
-  const saved = localStorage.getItem('testMode')
-  testMode.value = saved === '1' || saved === 'true'
+async function loadTestMode() {
+  testMode.value = await fetchTestMode()
 }
 
-function saveTestMode(enabled) {
-  testMode.value = enabled
-  localStorage.setItem('testMode', enabled ? '1' : '0')
+async function onSaveTestMode(enabled) {
+  savingTestMode.value = true
   mainError.value = ''
-  mainMsg.value = enabled ? 'Test mode is ON.' : 'Test mode is OFF.'
+  try {
+    const result = await saveTestMode(enabled)
+    testMode.value = result.enabled
+    mainMsg.value = result.message
+  } catch (err) {
+    mainError.value = err.response?.data?.message || 'Failed to update test mode.'
+  } finally {
+    savingTestMode.value = false
+  }
 }
 
 async function confirmResetDb() {
@@ -48,8 +56,8 @@ function goCreditUtilization() {
   router.push({ name: 'credit-utilization' })
 }
 
-onMounted(() => {
-  loadTestMode()
+onMounted(async () => {
+  await loadTestMode()
   if (route.query.Message) {
     mainMsg.value = String(route.query.Message)
   }
@@ -83,31 +91,34 @@ onMounted(() => {
         <div>
           <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Test Mode</h2>
           <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-            When ON, API calls from Budget Progress and related pages use the test database
-            (<code>test_mode=1</code>). Stored in your browser.
+            Stored in the live database (<code>asimo124_bills.app_settings</code>). When ON, only
+            Bills Admin list / create / edit / delete use the test database. Login and everything
+            else stay on live.
           </p>
           <div class="mt-4 inline-flex overflow-hidden rounded-lg border border-gray-300 dark:border-gray-600">
             <button
               type="button"
-              class="px-4 py-2 text-sm font-medium"
+              class="px-4 py-2 text-sm font-medium disabled:opacity-50"
               :class="
                 testMode
                   ? 'bg-primary-500 text-white'
                   : 'bg-white text-gray-700 dark:bg-gray-800 dark:text-gray-300'
               "
-              @click="saveTestMode(true)"
+              :disabled="savingTestMode"
+              @click="onSaveTestMode(true)"
             >
               ON
             </button>
             <button
               type="button"
-              class="px-4 py-2 text-sm font-medium"
+              class="px-4 py-2 text-sm font-medium disabled:opacity-50"
               :class="
                 !testMode
                   ? 'bg-primary-500 text-white'
                   : 'bg-white text-gray-700 dark:bg-gray-800 dark:text-gray-300'
               "
-              @click="saveTestMode(false)"
+              :disabled="savingTestMode"
+              @click="onSaveTestMode(false)"
             >
               OFF
             </button>

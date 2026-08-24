@@ -2,6 +2,7 @@
 import { computed, onMounted, reactive, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import api from '@/api/client'
+import { fetchTestMode } from '@/utils/testMode'
 
 const props = defineProps({
   mode: {
@@ -17,6 +18,7 @@ const loading = ref(false)
 const saving = ref(false)
 const error = ref('')
 const message = ref('')
+const testModeActive = ref(false)
 
 const form = reactive({
   vnd_bill: '',
@@ -166,7 +168,10 @@ async function onSubmit() {
   }
 }
 
-onMounted(loadBill)
+onMounted(async () => {
+  testModeActive.value = await fetchTestMode()
+  await loadBill()
+})
 </script>
 
 <template>
@@ -179,6 +184,13 @@ onMounted(loadBill)
       >
         Back to Bills
       </RouterLink>
+    </div>
+
+    <div
+      v-if="testModeActive"
+      class="rounded-xl border border-warning-200 bg-warning-50 px-4 py-3 text-sm text-warning-800 dark:border-warning-800 dark:bg-warning-900/30 dark:text-warning-200"
+    >
+      Test mode is ON — this form reads and writes the test database.
     </div>
 
     <div
