@@ -1,5 +1,5 @@
 <script setup>
-import { computed, onMounted, reactive, ref } from 'vue'
+import { computed, onMounted, reactive, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import api from '@/api/client'
 
@@ -16,6 +16,8 @@ const FREQUENCY_OPTIONS = [
   'Every 3 Months',
 ]
 
+const FILTERS_STORAGE_KEY = 'billsAdminFilters'
+
 const filters = reactive({
   vnd_bill2: '',
   sort1: 'bill',
@@ -26,6 +28,58 @@ const filters = reactive({
   multiplierGreaterThan1: false,
   frequency: Object.fromEntries(FREQUENCY_OPTIONS.map((f) => [f, true])),
 })
+
+function saveFilters() {
+  try {
+    localStorage.setItem(
+      FILTERS_STORAGE_KEY,
+      JSON.stringify({
+        vnd_bill2: filters.vnd_bill2,
+        sort1: filters.sort1,
+        sort1_dir: filters.sort1_dir,
+        sort2: filters.sort2,
+        sort2_dir: filters.sort2_dir,
+        showAuditFields: filters.showAuditFields,
+        multiplierGreaterThan1: filters.multiplierGreaterThan1,
+        frequency: { ...filters.frequency },
+      })
+    )
+  } catch {
+    // ignore quota / private browsing errors
+  }
+}
+
+function loadFilters() {
+  try {
+    const raw = localStorage.getItem(FILTERS_STORAGE_KEY)
+    if (!raw) return
+    const saved = JSON.parse(raw)
+    if (!saved || typeof saved !== 'object') return
+
+    if (typeof saved.vnd_bill2 === 'string') filters.vnd_bill2 = saved.vnd_bill2
+    if (typeof saved.sort1 === 'string') filters.sort1 = saved.sort1
+    if (typeof saved.sort1_dir === 'string') filters.sort1_dir = saved.sort1_dir
+    if (typeof saved.sort2 === 'string') filters.sort2 = saved.sort2
+    if (typeof saved.sort2_dir === 'string') filters.sort2_dir = saved.sort2_dir
+    if (typeof saved.showAuditFields === 'boolean') {
+      filters.showAuditFields = saved.showAuditFields
+    }
+    if (typeof saved.multiplierGreaterThan1 === 'boolean') {
+      filters.multiplierGreaterThan1 = saved.multiplierGreaterThan1
+    }
+    if (saved.frequency && typeof saved.frequency === 'object') {
+      FREQUENCY_OPTIONS.forEach((f) => {
+        if (typeof saved.frequency[f] === 'boolean') {
+          filters.frequency[f] = saved.frequency[f]
+        } else if (saved.frequency[f] === 0 || saved.frequency[f] === 1) {
+          filters.frequency[f] = Boolean(saved.frequency[f])
+        }
+      })
+    }
+  } catch {
+    // ignore corrupt storage
+  }
+}
 
 const groups = ref({})
 const loading = ref(false)
@@ -100,6 +154,7 @@ async function loadBills() {
 
 async function onSearch() {
   mainMsg.value = ''
+  saveFilters()
   await loadBills()
 }
 
@@ -216,6 +271,7 @@ async function saveAuditFields() {
 }
 
 onMounted(async () => {
+  loadFilters()
   if (route.query.message) {
     mainMsg.value = String(route.query.message)
     const nextQuery = { ...route.query }
@@ -224,6 +280,14 @@ onMounted(async () => {
   }
   await loadBills()
 })
+
+watch(
+  filters,
+  () => {
+    saveFilters()
+  },
+  { deep: true }
+)
 </script>
 
 <template>
