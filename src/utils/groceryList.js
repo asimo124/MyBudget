@@ -1,10 +1,15 @@
 export const GROCERY_LIST_STORAGE_KEY = 'groceryListItems'
 
-export function createGroceryItem(text = '') {
+export function createGroceryItem(text = '', isMarked = 0) {
   return {
     id: `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
     text: String(text).trim(),
+    is_marked: isMarked ? 1 : 0,
   }
+}
+
+function normalizeMarked(value) {
+  return value === 1 || value === true || value === '1' ? 1 : 0
 }
 
 export function loadGroceryItems() {
@@ -24,7 +29,11 @@ export function loadGroceryItems() {
             item.id != null && String(item.id).trim() !== ''
               ? String(item.id)
               : createGroceryItem().id
-          return { id, text }
+          return {
+            id,
+            text,
+            is_marked: normalizeMarked(item.is_marked),
+          }
         }
         return null
       })
@@ -40,6 +49,7 @@ export function saveGroceryItems(items) {
       .map((item) => ({
         id: String(item.id),
         text: String(item.text || '').trim(),
+        is_marked: normalizeMarked(item.is_marked),
       }))
       .filter((item) => item.text !== '')
     localStorage.setItem(GROCERY_LIST_STORAGE_KEY, JSON.stringify(clean))

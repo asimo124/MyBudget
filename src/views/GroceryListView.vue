@@ -83,6 +83,12 @@ function removeItem(id) {
   flash('Item deleted.')
 }
 
+function toggleMarked(item) {
+  if (editingId.value === item.id) return
+  item.is_marked = item.is_marked ? 0 : 1
+  persist()
+}
+
 function confirmClear() {
   clearGroceryItems()
   items.value = []
@@ -292,11 +298,16 @@ onMounted(() => {
             v-for="(item, index) in items"
             :key="item.id"
             draggable="true"
-            class="flex items-stretch gap-2 rounded-xl border border-neutral-200 bg-white p-2 transition-colors dark:border-neutral-600 dark:bg-dark-2"
+            class="flex cursor-pointer items-stretch gap-2 rounded-xl border p-2 transition-colors"
             :class="{
               'opacity-50': dragFromIndex === index,
               'border-primary-400 ring-1 ring-primary-400': dragOverIndex === index,
+              'border-red-200 bg-red-100 dark:border-red-800 dark:bg-red-900/40':
+                item.is_marked && dragOverIndex !== index,
+              'border-neutral-200 bg-white dark:border-neutral-600 dark:bg-dark-2':
+                !item.is_marked && dragOverIndex !== index,
             }"
+            @click="toggleMarked(item)"
             @dragstart="onDragStart(index, $event)"
             @dragover="onDragOver(index, $event)"
             @dragleave="onDragLeave"
@@ -308,14 +319,14 @@ onMounted(() => {
               class="flex cursor-grab items-center px-2 text-neutral-400 active:cursor-grabbing"
               title="Drag to reorder"
               aria-label="Drag to reorder"
-              @click.prevent
+              @click.stop.prevent
             >
               <i class="ph ph-dots-six-vertical text-xl"></i>
             </button>
 
             <div class="min-w-0 flex-1">
               <template v-if="editingId === item.id">
-                <div class="flex flex-col gap-2 sm:flex-row">
+                <div class="flex flex-col gap-2 sm:flex-row" @click.stop>
                   <input
                     v-model="editText"
                     type="text"
@@ -346,7 +357,11 @@ onMounted(() => {
               </template>
             </div>
 
-            <div v-if="editingId !== item.id" class="flex shrink-0 items-center gap-1">
+            <div
+              v-if="editingId !== item.id"
+              class="flex shrink-0 items-center gap-1"
+              @click.stop
+            >
               <button
                 type="button"
                 class="rounded-lg px-2 py-1.5 text-xs font-medium text-neutral-500 hover:bg-neutral-100 dark:hover:bg-neutral-700"
